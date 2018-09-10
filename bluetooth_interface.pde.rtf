@@ -1,0 +1,597 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 ArialMT;\f1\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 import processing.serial.*;
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 Serial myPort;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 String lidCountLbl, turnCountLbl;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 int i = 0;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 int tY= 240;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 PrintWriter currentData, pastData;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 byte lastByte = 0;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 OutputStream output;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 int enlargementFactor = 5;
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 //int[] data = new int [15];
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 int[] data = \{0, 0, 10, 260, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\};
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 /** 
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 \{ turning(1 for turning, 0 for not turning),
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0turnCount,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0dSide,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0dFront,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0lidCount,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0xPosLid1,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0yPosLid1,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0xPosLid2,
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0yPosLid2, 
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0...\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 **/
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 int timeSent, turning, turnCount, xPos, yPos, dSide, dFront, lidCount, dataIndex;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 int[][] lidPos;
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 boolean recieved, sent, lastWasPicture;
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 PImage img; 
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 PFont f;
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 void setup()\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0size(1175, 650);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0img = loadImage("160x120.jpg");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0myPort = new Serial(this, "COM5", 230400); // Starts the serial communication
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0myPort.clear();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0myPort.read();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0//myPort.bufferUntil('\\n'); // Defines up to which character the data from the serial port will be read. The character '\\n' or 'New Line'
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0output = createOutput("pic.jpg");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0sent = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0recieved = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0lastWasPicture = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0dataIndex = 0;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0f = createFont("Arial",16,true);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 \}
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2 void draw()\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0if(millis() - timeSent > 4000)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0sent = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0recieved = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0if(millis()%500 < 20 && !sent)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0if(!lastWasPicture)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0println("asked for picture");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0myPort.write('1');
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0lastWasPicture = true;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0sent = true;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0recieved = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0else\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0println("asked for data");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0myPort.write('0');
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0lastWasPicture = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0sent = true;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0recieved = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0timeSent = millis();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0try \{ 
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0while (myPort.available () > 0 && lastWasPicture) \{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0byte[] buffer = new byte[64];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0int byteNum = myPort.readBytes(buffer);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0//println("\\n"+byteNum);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0//byteNum = 32;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0//if(byteNum > 1 && hex(buffer[0]).equals("FF") && hex(buffer[1]).equals("D8"))\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0//output = createOutput("pic.jpg");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0//\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0for(int i = 0; i < byteNum; i++)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0print(hex(buffer[i]));
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0output.write(buffer[i]);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0if(hex(buffer[byteNum - 1]).equals("D9") && ((byteNum > 1 && (hex(buffer[byteNum - 2]).equals("FF"))) || hex(lastByte).equals("FF")))\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0output.flush();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0output.close();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0println("\\nflushed and closed");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0img = loadImage("pic.jpg");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0output = createOutput("pic.jpg");
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0sent = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0recieved = true;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0else\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0\'a0lastByte = buffer[byteNum - 1];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\} 
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0catch (IOException e) \{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0e.printStackTrace();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0while(myPort.available () > 0 && !lastWasPicture)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0data[dataIndex] = int(myPort.read());
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0println(data[dataIndex]);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0dataIndex++;
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2  \'a0\'a0\'a0if(dataIndex == 15)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0dataIndex = 0;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0sent = false;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\'a0\'a0\'a0recieved = true;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0turning = data[0];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0turnCount = data[1];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0dSide = data[2];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0dFront = data[3];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0lidCount = data[4];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0lidCountLbl = "Lid Count: \'a0\'a0\'a0" + lidCount;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0turnCountLbl = "Turn Count: " + turnCount;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0lidPos = new int[5][2];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0for(int i = 0; i < 5; i++)\{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0lidPos[i][0] = data[5 + 2 * i];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0lidPos[i][1] = data[5 + 2 * i + 1];
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0xPos = 0;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0yPos = 0;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0if (turnCount%2 == 0 && turnCount < 15) \{ //on an odd column
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0xPos = dSide + 10 + 10;// + 10 to centre the image of the cart
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0yPos = 300 - dFront - 20;// - 200 to centre the image of the cart
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\} else if (turnCount%2 != 0 && turnCount < 15) \{// on an even column
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0xPos = 300 - dSide - 10;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0yPos = dFront + 20;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\} else if (turnCount == 0|| turnCount == 15 || turnCount == 19) \{//last left 90 turn or the car has stopped
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0xPos = dFront + 20;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0yPos = dSide + 10 + 10;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\} else if (turnCount == 16 || turnCount == 18) \{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0xPos = dSide + 10 + 10;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0yPos = 300 - dFront - 20;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\} else if (turnCount == 17) \{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0xPos = 300 - dFront - 20;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0yPos = 300 - dSide - 10;
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0clear();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0background(225);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0stroke(150);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0image(img, 25, 25, 160 * enlargementFactor, 120 * enlargementFactor);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0fill(255);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0rect(25 + 160 * enlargementFactor + 20, 25, 300, 300);
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2  \'a0noStroke();
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2  \'a0fill(255, 0, 0);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0ellipse( 25 + 160 * enlargementFactor + 20 + xPos, 25 + yPos, 25, 25);
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2  \'a0fill(150);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0for (int i = 0; i < lidCount; i++) \{
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\'a0\'a0ellipse( 25 + 160 * enlargementFactor + 20 + lidPos[i][0], 25 + lidPos[i][1], 15, 15);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0\}
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0textFont(f,16); \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0// STEP 3 Specify font to be used
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0fill(0); \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0// STEP 4 Specify font color 
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0text(lidCountLbl, 25 + 160 * enlargementFactor + 20 + 10, 25 + 300 + 35);
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667  \'a0text(turnCountLbl, 25 + 160 * enlargementFactor + 20 + 10, 25 + 300 + 25 + 35);
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\pard\pardeftab720\sl400\partightenfactor0
+
+\f0\fs29\fsmilli14667 \cf2  \'a0noFill();
+\f1\fs24 \
+
+\f0\fs29\fsmilli14667 \}
+\f1\fs24 \
+\pard\pardeftab720\sl280\partightenfactor0
+\cf2 \
+\
+}
